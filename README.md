@@ -1,2 +1,2 @@
 # sx3_tach
-Tachometer and Button board for an SX3 CNC Mill retrofit 
+Code for sx3 tachometer and button board
