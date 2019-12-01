@@ -1,0 +1,8 @@
+spi.c:60:6:delay_nops	0	static
+spi.c:26:6:generate_spi_clock_pulse	48	static
+spi.c:66:6:initialize_lcd	48	static
+spi.c:204:6:write_to_lcd	72	static
+spi.c:290:9:convert_num_to_7segment	0	static
+spi.c:334:6:MX_SPI2_Init	8	static
+spi.c:356:6:HAL_SPI_MspInit	56	static
+spi.c:394:6:HAL_SPI_MspDeInit	8	static
