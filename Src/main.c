@@ -57,7 +57,8 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+/* global for RPM */
+uint16_t CURRENT_RPM = 0;
 /* USER CODE END 0 */
 
 /**
@@ -90,21 +91,28 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI2_Init();
-  MX_TIM1_Init();
+  MX_TIM2_Init();
+  MX_TIM9_Init();
   /* USER CODE BEGIN 2 */
   initialize_lcd();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_Base_Start(&htim9);
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  for(int i = 0; i < 999; i++) {
-		  delay_nops(100000);
-		  write_to_lcd(i*10, LCD_FLAG_FORWARD);
+
+	  delay_nops(100000);
+	  if(CURRENT_RPM > 0) {
+		  write_to_lcd(CURRENT_RPM, LCD_FLAG_FORWARD);
+	  } else {
+		  write_to_lcd(CURRENT_RPM, 0);
 	  }
 
   }
@@ -145,7 +153,7 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV16;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
@@ -155,7 +163,34 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+/* USER CODE BEGIN 4 */
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @param  htim: TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	static uint8_t toggle = 0;
+	uint16_t current_rpm = 0;
+    if (htim->Instance == htim2.Instance)
+    {
 
+    	current_rpm = __HAL_TIM_GET_COUNTER(&htim9);
+    	__HAL_TIM_SET_COUNTER(&htim9, 0);
+    	current_rpm *= 60; //convert from rps to rpm
+    	CURRENT_RPM = current_rpm; //save in global
+
+    	/* toggle LED */
+    	if(toggle == 0) {
+    		HAL_GPIO_WritePin(LED_ON_GPIO_Port, LED_ON_Pin, GPIO_PIN_RESET);
+    		toggle = 1;
+    	} else {
+    		HAL_GPIO_WritePin(LED_ON_GPIO_Port, LED_ON_Pin, GPIO_PIN_SET);
+    		toggle = 0;
+    	}
+    }
+}
 /* USER CODE END 4 */
 
 /**
