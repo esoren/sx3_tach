@@ -171,6 +171,8 @@ void SystemClock_Config(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+	//static uint16_t rpm_history[10];
+	//static uint8_t first_time_flag = 1;
 	static uint8_t toggle = 0;
 	uint16_t current_rpm = 0;
     if (htim->Instance == htim2.Instance)
